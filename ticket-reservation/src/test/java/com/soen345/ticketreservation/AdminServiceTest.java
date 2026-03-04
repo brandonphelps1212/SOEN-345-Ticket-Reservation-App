@@ -2,11 +2,14 @@ package com.soen345.ticketreservation;
 
 import com.soen345.ticketreservation.model.Event;
 import com.soen345.ticketreservation.model.Reservation;
+import com.soen345.ticketreservation.model.Ticket;
+import com.soen345.ticketreservation.service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +29,8 @@ class AdminServiceTest {
         sampleEvent = new Event(
                 "e-admin-01",
                 "Admin Test Event",
-                Event.Category.MOVIE,
+                "A test event",
+                Event.EventCategory.MOVIE,
                 "Quebec City",
                 LocalDateTime.now().plusDays(5),
                 100,
@@ -41,8 +45,8 @@ class AdminServiceTest {
     void testAddEvent_Success() {
         Event saved = adminService.addEvent(sampleEvent);
         assertNotNull(saved);
-        assertEquals("e-admin-01",    saved.getId());
-        assertEquals(Event.Status.ACTIVE, saved.getStatus());
+        assertEquals("e-admin-01",           saved.getEventId());
+        assertEquals(Event.EventStatus.ACTIVE, saved.getStatus());
     }
 
     @Test
@@ -70,9 +74,10 @@ class AdminServiceTest {
         updates.setLocation("Laval");
 
         Event result = adminService.editEvent("e-admin-01", updates);
-        assertEquals("New Title", result.getTitle());
-        assertEquals("Laval",     result.getLocation());
-        assertEquals(Event.Category.MOVIE, result.getCategory()); // unchanged
+        assertNotNull(result);
+        assertEquals("New Title",              result.getTitle());
+        assertEquals("Laval",                  result.getLocation());
+        assertEquals(Event.EventCategory.MOVIE, result.getCategory()); // unchanged
     }
 
     @Test
@@ -90,18 +95,26 @@ class AdminServiceTest {
     void testCancelEvent_Success() {
         adminService.addEvent(sampleEvent);
         assertTrue(adminService.cancelEvent("e-admin-01"));
-        assertEquals(Event.Status.CANCELLED, adminService.getEvent("e-admin-01").getStatus());
+        assertEquals(Event.EventStatus.CANCELLED,
+                adminService.getEvent("e-admin-01").getStatus());
     }
 
     @Test
     @DisplayName("Should also cancel linked reservations")
     void testCancelEvent_CancelsReservations() {
         adminService.addEvent(sampleEvent);
-        Reservation r = new Reservation("RES-001", "u-001", "e-admin-01", "TKT-001");
+
+        Ticket ticket = new Ticket();
+        ticket.setTicketId("TKT-001");
+        ticket.setEventId("e-admin-01");
+
+        Reservation r = new Reservation(
+                "RES-001", "u-001", "e-admin-01", List.of(ticket), 25.00);
         adminService.addReservationToStore(r);
 
         adminService.cancelEvent("e-admin-01");
-        assertEquals(Reservation.Status.CANCELLED, r.getStatus());
+
+        assertEquals(Reservation.ReservationStatus.CANCELLED, r.getStatus());
     }
 
     @Test

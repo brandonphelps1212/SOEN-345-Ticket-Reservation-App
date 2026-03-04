@@ -2,6 +2,8 @@ package com.soen345.ticketreservation;
 
 import com.soen345.ticketreservation.model.Event;
 import com.soen345.ticketreservation.model.Reservation;
+import com.soen345.ticketreservation.service.NotificationService;
+import com.soen345.ticketreservation.service.ReservationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,18 +23,17 @@ class ReservationServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Use real NotificationService (it just prints, no external calls)
         reservationService = new ReservationService(new NotificationService());
 
-        // A sample active event with 2 seats
         sampleEvent = new Event(
                 "e-test-01",
                 "Test Concert",
-                Event.Category.CONCERT,
+                "A great concert",
+                Event.EventCategory.CONCERT,
                 "Montreal",
                 LocalDateTime.now().plusDays(10),
-                2,
-                50.00
+                2,        // totalSeats
+                50.00     // ticketPrice
         );
         reservationService.addEventToStore(sampleEvent);
     }
@@ -45,10 +46,13 @@ class ReservationServiceTest {
         Reservation r = reservationService.bookTicket("u-001", "e-test-01");
 
         assertNotNull(r);
-        assertEquals("u-001",                     r.getUserId());
-        assertEquals("e-test-01",                 r.getEventId());
-        assertEquals(Reservation.Status.CONFIRMED, r.getStatus());
+        assertEquals("u-001",                                  r.getUserId());
+        assertEquals("e-test-01",                              r.getEventId());
+        assertEquals(Reservation.ReservationStatus.CONFIRMED,  r.getStatus());
         assertEquals(1, sampleEvent.getAvailableSeats());
+        assertEquals(50.00, r.getTotalAmount());
+        assertNotNull(r.getTickets());
+        assertEquals(1, r.getTickets().size());
     }
 
     @Test
@@ -68,7 +72,7 @@ class ReservationServiceTest {
     @Test
     @DisplayName("Should return null for a cancelled event")
     void testBookTicket_CancelledEvent() {
-        sampleEvent.setStatus(Event.Status.CANCELLED);
+        sampleEvent.setStatus(Event.EventStatus.CANCELLED);
         assertNull(reservationService.bookTicket("u-001", "e-test-01"));
     }
 
@@ -78,8 +82,10 @@ class ReservationServiceTest {
     @DisplayName("Should cancel a confirmed reservation and return seat")
     void testCancelReservation_Success() {
         Reservation r = reservationService.bookTicket("u-001", "e-test-01");
-        assertTrue(reservationService.cancelReservation(r.getId()));
-        assertEquals(Reservation.Status.CANCELLED, r.getStatus());
+        assertNotNull(r);
+
+        assertTrue(reservationService.cancelReservation(r.getReservationId()));
+        assertEquals(Reservation.ReservationStatus.CANCELLED, r.getStatus());
         assertEquals(2, sampleEvent.getAvailableSeats()); // seat returned
     }
 
@@ -93,8 +99,8 @@ class ReservationServiceTest {
     @DisplayName("Should return false on double-cancel")
     void testCancelReservation_AlreadyCancelled() {
         Reservation r = reservationService.bookTicket("u-001", "e-test-01");
-        reservationService.cancelReservation(r.getId());
-        assertFalse(reservationService.cancelReservation(r.getId()));
+        reservationService.cancelReservation(r.getReservationId());
+        assertFalse(reservationService.cancelReservation(r.getReservationId()));
     }
 
     // ── getReservation ────────────────────────────────────────
@@ -103,7 +109,9 @@ class ReservationServiceTest {
     @DisplayName("Should retrieve reservation by ID")
     void testGetReservation_Found() {
         Reservation booked = reservationService.bookTicket("u-001", "e-test-01");
-        assertEquals(booked.getId(), reservationService.getReservation(booked.getId()).getId());
+        Reservation found  = reservationService.getReservation(booked.getReservationId());
+        assertNotNull(found);
+        assertEquals(booked.getReservationId(), found.getReservationId());
     }
 
     @Test

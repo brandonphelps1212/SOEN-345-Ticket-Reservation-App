@@ -21,13 +21,13 @@ public class AdminService {
     //  ADD A NEW EVENT
     // ─────────────────────────────────────────────────────────
     public Event addEvent(Event event) {
-        if (event == null || event.getId() == null)
+        if (event == null || event.getEventId() == null)
             throw new IllegalArgumentException("Event or Event ID cannot be null.");
 
-        if (events.containsKey(event.getId()))
-            throw new IllegalStateException("Event ID already exists: " + event.getId());
+        if (events.containsKey(event.getEventId()))
+            throw new IllegalStateException("Event ID already exists: " + event.getEventId());
 
-        events.put(event.getId(), event);
+        events.put(event.getEventId(), event);
 
         // Save to Firebase
         try {
@@ -35,12 +35,12 @@ public class AdminService {
             data.put("title",          event.getTitle());
             data.put("category",       event.getCategory().toString());
             data.put("location",       event.getLocation());
-            data.put("eventDate",      event.getEventDate().toString());
+            data.put("dateTime",       event.getDateTime().toString());
             data.put("totalSeats",     event.getTotalSeats());
             data.put("availableSeats", event.getAvailableSeats());
-            data.put("price",          event.getPrice());
+            data.put("ticketPrice",    event.getTicketPrice());
             data.put("status",         event.getStatus().toString());
-            FirebaseService.writeData("events/" + event.getId(), data);
+            FirebaseService.writeData("events/" + event.getEventId(), data);
         } catch (Exception e) {
             System.out.println("[WARNING] Firebase write failed: " + e.getMessage());
         }
@@ -52,9 +52,6 @@ public class AdminService {
     // ─────────────────────────────────────────────────────────
     //  EDIT AN EXISTING EVENT
     // ─────────────────────────────────────────────────────────
-    /**
-     * Updates only the fields that are non-null / non-zero in `updated`.
-     */
     public Event editEvent(String eventId, Event updated) {
         Event existing = events.get(eventId);
         if (existing == null) {
@@ -62,19 +59,21 @@ public class AdminService {
             return null;
         }
 
-        if (updated.getTitle()     != null) existing.setTitle(updated.getTitle());
-        if (updated.getCategory()  != null) existing.setCategory(updated.getCategory());
-        if (updated.getLocation()  != null) existing.setLocation(updated.getLocation());
-        if (updated.getEventDate() != null) existing.setEventDate(updated.getEventDate());
-        if (updated.getPrice()     >  0)    existing.setPrice(updated.getPrice());
+        // Apply only non-null / non-zero fields
+        if (updated.getTitle()       != null) existing.setTitle(updated.getTitle());
+        if (updated.getCategory()    != null) existing.setCategory(updated.getCategory());
+        if (updated.getLocation()    != null) existing.setLocation(updated.getLocation());
+        if (updated.getDateTime()    != null) existing.setDateTime(updated.getDateTime());
+        if (updated.getTicketPrice() >  0)    existing.setTicketPrice(updated.getTicketPrice());
+        if (updated.getDescription() != null) existing.setDescription(updated.getDescription());
 
-        // Update in Firebase
+        // Update Firebase
         try {
             Map<String, Object> changes = new HashMap<>();
-            if (updated.getTitle()     != null) changes.put("title",     updated.getTitle());
-            if (updated.getLocation()  != null) changes.put("location",  updated.getLocation());
-            if (updated.getEventDate() != null) changes.put("eventDate", updated.getEventDate().toString());
-            if (updated.getPrice()     >  0)    changes.put("price",     updated.getPrice());
+            if (updated.getTitle()       != null) changes.put("title",       updated.getTitle());
+            if (updated.getLocation()    != null) changes.put("location",    updated.getLocation());
+            if (updated.getDateTime()    != null) changes.put("dateTime",    updated.getDateTime().toString());
+            if (updated.getTicketPrice() >  0)    changes.put("ticketPrice", updated.getTicketPrice());
             FirebaseService.writeData("events/" + eventId, changes);
         } catch (Exception e) {
             System.out.println("[WARNING] Firebase update failed: " + e.getMessage());
@@ -85,7 +84,7 @@ public class AdminService {
     }
 
     // ─────────────────────────────────────────────────────────
-    //  CANCEL AN EVENT  (also cancels all its reservations)
+    //  CANCEL AN EVENT  (also cancels all linked reservations)
     // ─────────────────────────────────────────────────────────
     public boolean cancelEvent(String eventId) {
         Event event = events.get(eventId);
@@ -94,32 +93,32 @@ public class AdminService {
             return false;
         }
 
-        if (event.getStatus() == Event.Status.CANCELLED) {
+        if (event.getStatus() == Event.EventStatus.CANCELLED) {
             System.out.println("[ERROR] Event already cancelled.");
             return false;
         }
 
         // 1. Cancel the event
-        event.setStatus(Event.Status.CANCELLED);
+        event.setStatus(Event.EventStatus.CANCELLED);
 
         // 2. Cancel all linked reservations
         int count = 0;
         for (Reservation r : reservations.values()) {
             if (r.getEventId().equals(eventId)
-                    && r.getStatus() == Reservation.Status.CONFIRMED) {
-                r.setStatus(Reservation.Status.CANCELLED);
+                    && r.getStatus() == Reservation.ReservationStatus.CONFIRMED) {
+                r.setStatus(Reservation.ReservationStatus.CANCELLED);
                 count++;
 
-                // Update each reservation in Firebase
                 try {
-                    FirebaseService.writeData("reservations/" + r.getId() + "/status", "CANCELLED");
+                    FirebaseService.writeData(
+                        "reservations/" + r.getReservationId() + "/status", "CANCELLED");
                 } catch (Exception e) {
                     System.out.println("[WARNING] Firebase reservation update failed: " + e.getMessage());
                 }
             }
         }
 
-        // 3. Update event status in Firebase
+        // 3. Update event in Firebase
         try {
             FirebaseService.writeData("events/" + eventId + "/status", "CANCELLED");
         } catch (Exception e) {
@@ -133,8 +132,10 @@ public class AdminService {
     // ─────────────────────────────────────────────────────────
     //  UTILITY
     // ─────────────────────────────────────────────────────────
-    public Event        getEvent(String eventId) { return events.get(eventId); }
-    public List<Event>  getAllEvents()            { return new ArrayList<>(events.values()); }
+    public Event       getEvent(String eventId) { return events.get(eventId); }
+    public List<Event> getAllEvents()            { return new ArrayList<>(events.values()); }
 
-    public void addReservationToStore(Reservation r) { reservations.put(r.getId(), r); }
+    public void addReservationToStore(Reservation r) {
+        reservations.put(r.getReservationId(), r);
+    }
 }
