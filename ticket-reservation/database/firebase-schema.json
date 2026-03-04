@@ -1,0 +1,48 @@
+{
+  "users": {
+    "u-001": {
+      "name": "Alice Dupont",
+      "email": "alice@example.com",
+      "phone": "+15141234567",
+      "passwordHash": "hashed_pw_here",
+      "createdAt": "2026-03-01T10:00:00"
+    }
+  },
+
+  "events": {
+    "e-001": {
+      "title": "Coldplay World Tour",
+      "category": "CONCERT",
+      "location": "Montreal Bell Centre",
+      "eventDate": "2026-06-15T20:00:00",
+      "totalSeats": 500,
+      "availableSeats": 500,
+      "price": 120.00,
+      "status": "ACTIVE",
+      "createdAt": "2026-03-01T10:00:00"
+    }
+  },
+
+  "tickets": {
+    "t-001": {
+      "eventId": "e-001",
+      "seatNumber": "A1",
+      "status": "AVAILABLE"
+    },
+    "t-002": {
+      "eventId": "e-001",
+      "seatNumber": "A2",
+      "status": "AVAILABLE"
+    }
+  },
+
+  "reservations": {
+    "r-001": {
+      "userId": "u-001",
+      "eventId": "e-001",
+      "ticketId": "t-001",
+      "status": "CONFIRMED",
+      "createdAt": "2026-03-01T11:00:00"
+    }
+  }
+}
