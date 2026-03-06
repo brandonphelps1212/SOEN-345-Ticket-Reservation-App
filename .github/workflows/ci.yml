@@ -23,13 +23,15 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean compile --batch-mode
+        working-directory: ticket-reservation
 
       - name: Run Tests
         run: mvn test --batch-mode
+        working-directory: ticket-reservation
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: target/surefire-reports/
+          path: ticket-reservation/target/surefire-reports/
