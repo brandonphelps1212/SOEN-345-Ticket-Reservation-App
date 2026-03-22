@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1070839471784",
+    "firebase_url": "https://soen345-ticket-reservation-default-rtdb.firebaseio.com",
+    "project_id": "soen345-ticket-reservation",
+    "storage_bucket": "soen345-ticket-reservation.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070839471784:android:a364222e2df8f3b1aeac9d",
+        "android_client_info": {
+          "package_name": "com.soen345.ticketreservationapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAl59VfqWlXRyTO0VUJTp6-tnjC3zcXLLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
