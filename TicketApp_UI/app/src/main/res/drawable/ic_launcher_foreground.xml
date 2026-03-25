@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple ticket icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,36H36c-2.2,0-4,1.8-4,4v8c2.2,0,4,1.8,4,4s-1.8,4-4,4v8c0,2.2,1.8,4,4,4h36
+                          c2.2,0,4-1.8,4-4v-8c-2.2,0-4-1.8-4-4s1.8-4,4-4v-8C76,37.8,74.2,36,72,36z
+                          M70,60H38V52h32V60z M70,48H38v-8h32V48z"/>
+</vector>

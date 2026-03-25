@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.TicketApp">
+
+        <!-- Splash / Entry point -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Registration -->
+        <activity android:name=".ui.register.RegisterActivity" />
+
+        <!-- Event List -->
+        <activity android:name=".ui.eventlist.EventListActivity" />
+
+        <!-- Event Detail -->
+        <activity android:name=".ui.eventdetail.EventDetailActivity" />
+
+        <!-- Booking Confirmation -->
+        <activity android:name=".ui.booking.BookingConfirmationActivity" />
+
+        <!-- My Reservations + Cancel -->
+        <activity android:name=".ui.myreservations.MyReservationsActivity" />
+
+    </application>
+
+</manifest>
