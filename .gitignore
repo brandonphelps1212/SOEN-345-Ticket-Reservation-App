@@ -1,3 +1,12 @@
 .env
 ticket-reservation/src/main/resources/firebase-key.json
 target/
+
+# Android
+TicketApp_UI/.gradle/
+TicketApp_UI/app/build/
+TicketApp_UI/build/
+TicketApp_UI/local.properties
+TicketApp_UI/app/google-services.json
+TicketApp_UI/.idea/workspace.xml
+TicketApp_UI/.idea/caches/
