@@ -1,7 +1,6 @@
 package com.soen345.ticketReservation.ui.eventdetail;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -13,22 +12,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.soen345.ticketReservation.R;
 import com.soen345.ticketReservation.model.Event;
+import com.soen345.ticketReservation.model.Reservation;
+import com.soen345.ticketReservation.service.EmailSmsConfirmationService;
 import com.soen345.ticketReservation.service.FirebaseRepository;
 import com.soen345.ticketReservation.ui.booking.BookingConfirmationActivity;
+import com.soen345.ticketReservation.util.SessionManager;
 
-/**
- * Event Detail screen.
- * Shows full event info and a "Book Now" button.
- * On book → calls FirebaseRepository.bookTicket() → goes to BookingConfirmation.
- */
+/** Event Detail screen. Books a ticket and generates simulated email/SMS confirmations. */
 public class EventDetailActivity extends AppCompatActivity {
 
     private TextView tvTitle, tvCategory, tvLocation, tvDate,
                      tvDescription, tvPrice, tvSeats, tvStatus;
-    private Button    btnBook;
+    private Button btnBook;
     private ProgressBar progressBar;
 
     private FirebaseRepository repository;
+    private EmailSmsConfirmationService confirmationService;
     private Event currentEvent;
 
     @Override
@@ -41,20 +40,20 @@ public class EventDetailActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        repository  = new FirebaseRepository();
+        repository = new FirebaseRepository();
+        confirmationService = new EmailSmsConfirmationService(repository);
 
-        tvTitle       = findViewById(R.id.tvDetailTitle);
-        tvCategory    = findViewById(R.id.tvDetailCategory);
-        tvLocation    = findViewById(R.id.tvDetailLocation);
-        tvDate        = findViewById(R.id.tvDetailDate);
+        tvTitle = findViewById(R.id.tvDetailTitle);
+        tvCategory = findViewById(R.id.tvDetailCategory);
+        tvLocation = findViewById(R.id.tvDetailLocation);
+        tvDate = findViewById(R.id.tvDetailDate);
         tvDescription = findViewById(R.id.tvDetailDescription);
-        tvPrice       = findViewById(R.id.tvDetailPrice);
-        tvSeats       = findViewById(R.id.tvDetailSeats);
-        tvStatus      = findViewById(R.id.tvDetailStatus);
-        btnBook       = findViewById(R.id.btnBook);
-        progressBar   = findViewById(R.id.progressBar);
+        tvPrice = findViewById(R.id.tvDetailPrice);
+        tvSeats = findViewById(R.id.tvDetailSeats);
+        tvStatus = findViewById(R.id.tvDetailStatus);
+        btnBook = findViewById(R.id.btnBook);
+        progressBar = findViewById(R.id.progressBar);
 
-        // Rebuild Event from intent extras (avoids Parcelable for simplicity)
         Intent intent = getIntent();
         currentEvent = new Event();
         currentEvent.setEventId(intent.getStringExtra("eventId"));
@@ -68,15 +67,14 @@ public class EventDetailActivity extends AppCompatActivity {
         currentEvent.setStatus(intent.getStringExtra("eventStatus"));
 
         displayEvent();
-
         btnBook.setOnClickListener(v -> bookTicket());
     }
 
     private void displayEvent() {
         tvTitle.setText(currentEvent.getTitle());
         tvCategory.setText("Category: " + currentEvent.getCategory());
-        tvLocation.setText("📍 " + currentEvent.getLocation());
-        tvDate.setText("🗓 " + (currentEvent.getEventDate() != null
+        tvLocation.setText("Location: " + currentEvent.getLocation());
+        tvDate.setText("Date: " + (currentEvent.getEventDate() != null
                 ? currentEvent.getEventDate().replace("T", " at ") : ""));
         tvDescription.setText(currentEvent.getDescription() != null
                 ? currentEvent.getDescription() : "No description available.");
@@ -86,16 +84,15 @@ public class EventDetailActivity extends AppCompatActivity {
 
         if (!currentEvent.hasAvailableSeats()) {
             btnBook.setEnabled(false);
-            btnBook.setText("Sold Out");
+            btnBook.setText("Unavailable");
         }
     }
 
     private void bookTicket() {
-        SharedPreferences prefs = getSharedPreferences("TicketAppPrefs", MODE_PRIVATE);
-        String userId = prefs.getString("userId", null);
+        String userId = SessionManager.getUserId(this);
 
         if (userId == null) {
-            Toast.makeText(this, "Please register first.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please log in first.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -104,20 +101,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
         repository.bookTicket(userId, currentEvent, new FirebaseRepository.ReservationCallback() {
             @Override
-            public void onSuccess(com.soen345.ticketReservation.model.Reservation reservation) {
-                progressBar.setVisibility(View.GONE);
-
-                Intent intent = new Intent(EventDetailActivity.this,
-                        BookingConfirmationActivity.class);
-                intent.putExtra("reservationId",   reservation.getReservationId());
-                intent.putExtra("ticketId",         reservation.getTicketId());
-                intent.putExtra("eventTitle",       currentEvent.getTitle());
-                intent.putExtra("eventLocation",    currentEvent.getLocation());
-                intent.putExtra("eventDate",        currentEvent.getEventDate());
-                intent.putExtra("totalAmount",      reservation.getTotalAmount());
-                intent.putExtra("reservationDate",  reservation.getReservationDate());
-                startActivity(intent);
-                finish();
+            public void onSuccess(Reservation reservation) {
+                createConfirmationsThenOpenScreen(reservation);
             }
 
             @Override
@@ -127,6 +112,34 @@ public class EventDetailActivity extends AppCompatActivity {
                 Toast.makeText(EventDetailActivity.this,
                         "Booking failed: " + error, Toast.LENGTH_LONG).show();
             }
+        });
+    }
+
+    private void createConfirmationsThenOpenScreen(Reservation reservation) {
+        String userId = SessionManager.getUserId(this);
+        String email = SessionManager.getEmail(this);
+        String phoneNumber = SessionManager.getPhoneNumber(this);
+
+        confirmationService.createBookingConfirmations(userId, email, phoneNumber, reservation, currentEvent, result -> {
+            progressBar.setVisibility(View.GONE);
+
+            Toast.makeText(EventDetailActivity.this, result.statusMessage, Toast.LENGTH_LONG).show();
+
+            Intent intent = new Intent(EventDetailActivity.this, BookingConfirmationActivity.class);
+            intent.putExtra("reservationId", reservation.getReservationId());
+            intent.putExtra("ticketId", reservation.getTicketId());
+            intent.putExtra("eventTitle", currentEvent.getTitle());
+            intent.putExtra("eventLocation", currentEvent.getLocation());
+            intent.putExtra("eventDate", currentEvent.getEventDate());
+            intent.putExtra("totalAmount", reservation.getTotalAmount());
+            intent.putExtra("reservationDate", reservation.getReservationDate());
+            intent.putExtra("reservationStatus", reservation.getStatus());
+            intent.putExtra("confirmationStatus", result.statusMessage);
+            intent.putExtra("emailRecipient", result.emailRecipient);
+            intent.putExtra("smsRecipient", result.smsRecipient);
+            intent.putExtra("confirmationMessage", result.confirmationMessage);
+            startActivity(intent);
+            finish();
         });
     }
 

@@ -11,13 +11,7 @@ import com.soen345.ticketReservation.R;
 import com.soen345.ticketReservation.ui.eventlist.EventListActivity;
 import com.soen345.ticketReservation.ui.myreservations.MyReservationsActivity;
 
-/**
- * Booking Confirmation screen.
- *
- * Per report requirement: "Customers shall be able to receive confirmations
- * via email or SMS." — this screen shows the confirmation summary and informs
- * the user that an email/SMS confirmation has been sent (via NotificationService stub).
- */
+/** Shows booking details and the simulated email/SMS confirmation information. */
 public class BookingConfirmationActivity extends AppCompatActivity {
 
     @Override
@@ -26,40 +20,52 @@ public class BookingConfirmationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_booking_confirmation);
         if (getSupportActionBar() != null) getSupportActionBar().setTitle("Booking Confirmed!");
 
-        Intent intent         = getIntent();
-        String reservationId  = intent.getStringExtra("reservationId");
-        String ticketId       = intent.getStringExtra("ticketId");
-        String eventTitle     = intent.getStringExtra("eventTitle");
-        String eventLocation  = intent.getStringExtra("eventLocation");
-        String eventDate      = intent.getStringExtra("eventDate");
-        double totalAmount    = intent.getDoubleExtra("totalAmount", 0);
+        Intent intent = getIntent();
+        String reservationId = intent.getStringExtra("reservationId");
+        String ticketId = intent.getStringExtra("ticketId");
+        String eventTitle = intent.getStringExtra("eventTitle");
+        String eventLocation = intent.getStringExtra("eventLocation");
+        String eventDate = intent.getStringExtra("eventDate");
+        double totalAmount = intent.getDoubleExtra("totalAmount", 0);
         String reservationDate = intent.getStringExtra("reservationDate");
+        String reservationStatus = intent.getStringExtra("reservationStatus");
+        String confirmationStatus = intent.getStringExtra("confirmationStatus");
+        String emailRecipient = intent.getStringExtra("emailRecipient");
+        String smsRecipient = intent.getStringExtra("smsRecipient");
+        String confirmationMessage = intent.getStringExtra("confirmationMessage");
 
-        TextView tvConfirmTitle     = findViewById(R.id.tvConfirmTitle);
-        TextView tvReservationId    = findViewById(R.id.tvReservationId);
-        TextView tvTicketId         = findViewById(R.id.tvTicketId);
-        TextView tvEventTitle       = findViewById(R.id.tvEventTitle);
-        TextView tvEventLocation    = findViewById(R.id.tvEventLocation);
-        TextView tvEventDate        = findViewById(R.id.tvEventDate);
-        TextView tvTotalAmount      = findViewById(R.id.tvTotalAmount);
-        TextView tvReservationDate  = findViewById(R.id.tvReservationDate);
-        TextView tvNotification     = findViewById(R.id.tvNotification);
-        Button   btnBackToEvents    = findViewById(R.id.btnBackToEvents);
-        Button   btnMyReservations  = findViewById(R.id.btnMyReservations);
+        TextView tvConfirmTitle = findViewById(R.id.tvConfirmTitle);
+        TextView tvReservationId = findViewById(R.id.tvReservationId);
+        TextView tvTicketId = findViewById(R.id.tvTicketId);
+        TextView tvEventTitle = findViewById(R.id.tvEventTitle);
+        TextView tvEventLocation = findViewById(R.id.tvEventLocation);
+        TextView tvEventDate = findViewById(R.id.tvEventDate);
+        TextView tvTotalAmount = findViewById(R.id.tvTotalAmount);
+        TextView tvReservationDate = findViewById(R.id.tvReservationDate);
+        TextView tvReservationStatus = findViewById(R.id.tvReservationStatus);
+        TextView tvNotification = findViewById(R.id.tvNotification);
+        TextView tvConfirmationStatus = findViewById(R.id.tvConfirmationStatus);
+        TextView tvEmailRecipient = findViewById(R.id.tvEmailRecipient);
+        TextView tvSmsRecipient = findViewById(R.id.tvSmsRecipient);
+        TextView tvConfirmationMessage = findViewById(R.id.tvConfirmationMessage);
+        Button btnBackToEvents = findViewById(R.id.btnBackToEvents);
+        Button btnMyReservations = findViewById(R.id.btnMyReservations);
 
-        tvConfirmTitle.setText("✅ Booking Confirmed!");
-        tvReservationId.setText("Reservation ID: " + reservationId);
-        tvTicketId.setText("Ticket ID: " + ticketId);
-        tvEventTitle.setText("Event: " + eventTitle);
-        tvEventLocation.setText("Location: " + eventLocation);
-        tvEventDate.setText("Date: " + (eventDate != null
-                ? eventDate.replace("T", " at ") : ""));
+        tvConfirmTitle.setText("Booking Confirmed!");
+        tvReservationId.setText("Reservation ID: " + safe(reservationId));
+        tvTicketId.setText("Ticket ID: " + safe(ticketId));
+        tvEventTitle.setText("Event: " + safe(eventTitle));
+        tvEventLocation.setText("Location: " + safe(eventLocation));
+        tvEventDate.setText("Date: " + (eventDate != null ? eventDate.replace("T", " at ") : ""));
         tvTotalAmount.setText(String.format("Amount Paid: $%.2f", totalAmount));
-        tvReservationDate.setText("Booked on: " + (reservationDate != null
-                ? reservationDate.replace("T", " ") : ""));
+        tvReservationDate.setText("Booked on: " + (reservationDate != null ? reservationDate.replace("T", " ") : ""));
+        tvReservationStatus.setText("Reservation Status: " + safe(reservationStatus));
 
-        // Report requirement: "Customers shall be able to receive confirmations via email or SMS"
-        tvNotification.setText("📧 A confirmation has been sent to your registered email / SMS.");
+        tvNotification.setText("Email and SMS confirmation records were generated in Firebase when recipients were available.");
+        tvConfirmationStatus.setText("Confirmation Status: " + safe(confirmationStatus));
+        tvEmailRecipient.setText("Email Recipient: " + safe(emailRecipient));
+        tvSmsRecipient.setText("SMS Recipient: " + safe(smsRecipient));
+        tvConfirmationMessage.setText(safe(confirmationMessage));
 
         btnBackToEvents.setOnClickListener(v -> {
             Intent back = new Intent(this, EventListActivity.class);
@@ -70,5 +76,9 @@ public class BookingConfirmationActivity extends AppCompatActivity {
 
         btnMyReservations.setOnClickListener(v ->
                 startActivity(new Intent(this, MyReservationsActivity.class)));
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 }

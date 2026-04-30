@@ -24,6 +24,7 @@ import com.soen345.ticketReservation.model.Event;
 import com.soen345.ticketReservation.service.FirebaseRepository;
 import com.soen345.ticketReservation.ui.eventdetail.EventDetailActivity;
 import com.soen345.ticketReservation.ui.myreservations.MyReservationsActivity;
+import com.soen345.ticketReservation.util.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,7 +46,7 @@ public class EventListActivity extends AppCompatActivity {
 
     private EditText etSearchLocation;
     private Spinner  spinnerCategory;
-    private Button   btnPickDate, btnFilter, btnClearFilter;
+    private Button   btnPickDate, btnFilter, btnClearFilter, btnLogout;
     private TextView tvSelectedDate;
 
     private FirebaseRepository repository;
@@ -72,6 +73,7 @@ public class EventListActivity extends AppCompatActivity {
         tvSelectedDate   = findViewById(R.id.tvSelectedDate);
         btnFilter        = findViewById(R.id.btnFilter);
         btnClearFilter   = findViewById(R.id.btnClearFilter);
+        btnLogout        = findViewById(R.id.btnLogoutCustomer);
 
         adapter = new EventAdapter(new ArrayList<>(), event -> {
             Intent i = new Intent(this, EventDetailActivity.class);
@@ -88,6 +90,7 @@ public class EventListActivity extends AppCompatActivity {
         });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        recyclerView.setNestedScrollingEnabled(false);
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, CATEGORIES);
@@ -97,6 +100,7 @@ public class EventListActivity extends AppCompatActivity {
         btnPickDate.setOnClickListener(v -> showDatePicker());
         btnFilter.setOnClickListener(v -> applyFilters());
         btnClearFilter.setOnClickListener(v -> clearFilters());
+        btnLogout.setOnClickListener(v -> SessionManager.logoutAndOpenLogin(this));
 
         loadEvents();
     }

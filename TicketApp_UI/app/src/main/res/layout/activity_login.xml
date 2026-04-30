@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -14,7 +15,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create Account"
+            android:text="Welcome Back"
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="@color/colorPrimary"
@@ -23,82 +24,35 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Register to browse and book events"
+            android:text="Log in with your email or phone number"
             android:textSize="14sp"
             android:textColor="@color/textSecondary"
             android:layout_marginBottom="32dp"/>
 
-        <!-- Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_marginBottom="16dp">
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etName"
+                android:id="@+id/etLoginIdentifier"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Full name"
-                android:inputType="textPersonName"/>
+                android:hint="Email or phone number"
+                android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Contact type selector -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Register with:"
-            android:textSize="14sp"
-            android:layout_marginBottom="8dp"/>
-
-        <RadioGroup
-            android:id="@+id/rgContactType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-
-            <RadioButton
-                android:id="@+id/rbEmail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Email"
-                android:checked="true"
-                android:layout_marginEnd="24dp"/>
-
-            <RadioButton
-                android:id="@+id/rbPhone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phone Number"/>
-        </RadioGroup>
-
-        <!-- Email or Phone -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="16dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etContact"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Email address"
-                android:inputType="textEmailAddress"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Password -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:endIconMode="password_toggle"
-            android:layout_marginBottom="24dp"
-            xmlns:app="http://schemas.android.com/apk/res-auto">
+            android:layout_marginBottom="24dp">
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPassword"
+                android:id="@+id/etLoginPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Password (min 6 characters)"
+                android:hint="Password"
                 android:inputType="textPassword"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -111,20 +65,20 @@
             android:layout_marginBottom="16dp"/>
 
         <Button
-            android:id="@+id/btnRegister"
+            android:id="@+id/btnLogin"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Create Account"
+            android:text="Log In"
             android:textSize="16sp"
             android:layout_marginBottom="10dp"
             style="@style/Widget.MaterialComponents.Button"/>
 
         <Button
-            android:id="@+id/btnGoToLogin"
+            android:id="@+id/btnCreateAccount"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Already have an account? Log In"
-            android:textSize="15sp"
+            android:text="Create New Account"
+            android:textSize="16sp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
     </LinearLayout>

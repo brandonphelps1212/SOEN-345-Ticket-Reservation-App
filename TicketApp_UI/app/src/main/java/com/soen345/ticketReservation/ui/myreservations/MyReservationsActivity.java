@@ -62,6 +62,7 @@ public class MyReservationsActivity extends AppCompatActivity {
         adapter = new ReservationAdapter(new ArrayList<>(), this::confirmCancel);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        recyclerView.setNestedScrollingEnabled(false);
 
         loadReservations();
     }
